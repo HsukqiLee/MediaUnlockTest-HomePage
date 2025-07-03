@@ -1,4 +1,9 @@
-
+$currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+$principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
+    Write-Host "请以管理员身份运行此脚本。" -ForegroundColor Red
+    exit
+}
 
 if (-not (Test-Path -Path "$env:ProgramFiles\MediaUnlockTest")) {
     New-Item -ItemType Directory -Path "$env:ProgramFiles\MediaUnlockTest" -Force
