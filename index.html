@@ -1,53 +1,595 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <title>MediaUnlockTest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaUnlockTest - 高性能流媒体解锁检测工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #4f46e5;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray: #64748b;
+            --code-bg: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.5;
+            color: var(--dark);
+            background-color: var(--light);
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(79, 70, 229, 0.05) 0%, transparent 50%);
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            max-width: 36rem;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
         .container {
-            width: 60%;
-            margin: 10% auto 0;
-            background-color: #f0f0f0;
-            padding: 2% 5%;
-            border-radius: 10px
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
 
-        ul {
-            padding-left: 20px;
+        .content {
+            padding: 3rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
         }
 
-            ul li {
-                line-height: 2.3
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-body p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .command-block {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .command-block pre {
+            color: white;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            padding-right: 2.5rem; /* 为复制按钮留出空间 */
+        }
+
+        .os-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            gap: 0.375rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            border-radius: 0.25rem;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .os-badges {
+            margin-bottom: 1rem;
+        }
+
+        .feature-list {
+            margin-top: 1.5rem;
+            list-style-type: none; /* 移除默认的列表样式 */
+            padding-left: 0.5rem;
+        }
+
+        .feature-list li {
+            margin-bottom: 0.75rem;
+            position: relative;
+            padding-left: 1.75rem;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .cmd-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .cmd-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--primary);
+        }
+
+        .parameters {
+            margin-top: 1rem;
+        }
+
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .parameter-table th, .parameter-table td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .parameter-table th {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .footer {
+            background-color: white;
+            padding: 2rem 0;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center;
+            color: var(--gray);
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .author-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 9999px;
+        }
+
+        .author img {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+        }
+
+        /* Monitor section */
+        .monitor-preview {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .monitor-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
             }
-
-        a {
-            color: #20a53a
+            
+            .header h1 {
+                font-size: 2rem;
+            }
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Copy command functionality
+            document.querySelectorAll('.copy-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const command = this.previousElementSibling.textContent;
+                    navigator.clipboard.writeText(command);
+                    
+                    // Show copied indicator
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                });
+            });
+
+            // Tab functionality
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const target = this.getAttribute('data-target');
+                    
+                    // Deactivate all tabs and contents
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Activate selected tab and content
+                    this.classList.add('active');
+                    document.querySelector(`.tab-content[data-id="${target}"]`).classList.add('active');
+                });
+            });
+        });
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>MediaUnlockTest</h1>
-        <h3>Usage</h3>
-        <ul>
-            <li><b>For Linux: </b><code>bash <(curl -Ls unlock.icmp.ing/scripts/test.sh)</code></li>
-            <li><b>For Windows: </b><code>irm https://unlock.icmp.ing/scripts/download_test.ps1 | iex</code></li>
-        </ul>
-        <h3>Migration</h3>
-        <ul>
-            <li>Uninstall old version and install the latest one.</li>
-            <li><b>For Linux: </b><code>bash <(curl -Ls unlock.icmp.ing/scripts/migrate.sh)</code></li>
-            <li><b>For Windows: </b><code>irm https://unlock.icmp.ing/scripts/download_migrate.ps1 | iex</code></li>
-        </ul>
-        <h3>Docs</h3>
-        <ul>
-            <li><a href="https://github.com/HsukqiLee/MediaUnlockTest" target="_blank">GitHub README</a></li>
-        </ul>
-        <h3>By</h3>
-        <ul>
-            <li><a href="https://github.com/nkeonkeo/MediaUnlockTest" target="_blank">nkeonkeo</a></li>
-            <li>Hsukqi Lee</li>
-        </ul>
-    </div>
+    <header class="header">
+        <div class="container">
+            <h1>MediaUnlockTest</h1>
+            <p>高性能流媒体解锁检测工具 | 快速、全面的流媒体区域限制测试方案</p>
+        </div>
+    </header>
+
+    <main class="container content">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-bolt"></i> 快速开始</h2>
+            </div>
+            <div class="card-body">
+                <p>一键检测您的网络环境对各大流媒体平台的解锁情况</p>
+                
+                <div class="os-badges">
+                    <span class="os-badge"><i class="fab fa-linux"></i> Linux</span>
+                    <span class="os-badge"><i class="fab fa-apple"></i> macOS</span>
+                    <span class="os-badge"><i class="fab fa-android"></i> Android</span>
+                </div>
+                <div class="command-block">
+                    <pre>bash <(curl -Ls unlock.icmp.ing/scripts/test.sh)</pre>
+                    <button class="copy-button"><i class="fas fa-copy"></i></button>
+                </div>
+                
+                <div class="os-badges">
+                    <span class="os-badge"><i class="fab fa-windows"></i> Windows</span>
+                </div>
+                <div class="command-block">
+                    <pre>irm https://unlock.icmp.ing/scripts/download_test.ps1 | iex</pre>
+                    <button class="copy-button"><i class="fas fa-copy"></i></button>
+                </div>
+                
+                <div class="feature-list">
+                    <li>支持 Linux、macOS、Windows、Android Termux、iOS iSH</li>
+                    <li>原版脚本基础上修复多个 Bug</li>
+                    <li>提供更丰富的测试项目</li>
+                    <li>更快的检测速度，并发请求设计</li>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-cogs"></i> 高级参数</h2>
+            </div>
+            <div class="card-body">
+                <p>通过附加参数自定义您的测试方式</p>
+                
+                <div class="tabs">
+                    <div class="tab active" data-target="ipv4">仅 IPv4</div>
+                    <div class="tab" data-target="ipv6">仅 IPv6</div>
+                    <div class="tab" data-target="params">全部参数</div>
+                </div>
+                
+                <div class="tab-content active" data-id="ipv4">
+                    <div class="command-block">
+                        <pre>bash <(curl -Ls unlock.icmp.ing/scripts/test.sh) -m 4</pre>
+                        <button class="copy-button"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" data-id="ipv6">
+                    <div class="command-block">
+                        <pre>bash <(curl -Ls unlock.icmp.ing/scripts/test.sh) -m 6</pre>
+                        <button class="copy-button"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <p class="hint">仅测试已知支持 IPv6 的项目</p>
+                </div>
+                
+                <div class="tab-content" data-id="params">
+                    <div class="parameters">
+                        <table class="parameter-table">
+                            <tr>
+                                <th>参数</th>
+                                <th>说明</th>
+                            </tr>
+                            <tr>
+                                <td><code>-I</code></td>
+                                <td>绑定的 IP / 接口</td>
+                            </tr>
+                            <tr>
+                                <td><code>-f</code></td>
+                                <td>强制使用 IPv6 测试</td>
+                            </tr>
+                            <tr>
+                                <td><code>-u</code></td>
+                                <td>检查更新</td>
+                            </tr>
+                            <tr>
+                                <td><code>-v</code></td>
+                                <td>输出版本</td>
+                            </tr>
+                            <tr>
+                                <td><code>-conc</code></td>
+                                <td>并发请求数</td>
+                            </tr>
+                            <tr>
+                                <td><code>-debug</code></td>
+                                <td>开启调试模式</td>
+                            </tr>
+                            <tr>
+                                <td><code>-dns-servers</code></td>
+                                <td>指定 DNS 服务器（示例："1.1.1.1:53"）</td>
+                            </tr>
+                            <tr>
+                                <td><code>-http-proxy</code></td>
+                                <td>设置 HTTP 代理</td>
+                            </tr>
+                            <tr>
+                                <td><code>-socks-proxy</code></td>
+                                <td>设置 SOCKS5 代理</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-line"></i> 解锁监控</h2>
+            </div>
+            <div class="card-body">
+                <p>使用 Prometheus 和 Grafana 搭建流媒体解锁监控</p>
+                
+                <div class="os-badges">
+                    <span class="os-badge"><i class="fab fa-linux"></i> Linux</span>
+                    <span class="os-badge"><i class="fab fa-apple"></i> macOS</span>
+                    <span class="os-badge"><i class="fab fa-android"></i> Android</span>
+                </div>
+                <div class="command-block">
+                    <pre>bash <(curl -Ls unlock.icmp.ing/scripts/monitor.sh) -service</pre>
+                    <button class="copy-button"><i class="fas fa-copy"></i></button>
+                </div>
+                
+                <div class="os-badges">
+                    <span class="os-badge"><i class="fab fa-windows"></i> Windows</span>
+                </div>
+                <div class="command-block">
+                    <pre>irm https://unlock.icmp.ing/scripts/download_monitor.ps1 | iex</pre>
+                    <button class="copy-button"><i class="fas fa-copy"></i></button>
+                </div>
+                
+                <div class="monitor-preview">
+                    <img src="https://raw.githubusercontent.com/HsukqiLee/MediaUnlockTest/main/monitor/image.png" alt="Monitor Preview">
+                </div>
+                
+                <div class="feature-list">
+                    <li>实时监控各大流媒体平台解锁状态</li>
+                    <li>自定义检测时间间隔</li>
+                    <li>支持多节点集中管理</li>
+                    <li>直观的图表展示</li>
+                </div>
+                
+                <a href="https://github.com/HsukqiLee/MediaUnlockTest/blob/main/monitor/README.md" class="btn" target="_blank">
+                    <i class="fas fa-book"></i> 详细文档
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-sync-alt"></i> 版本迁移</h2>
+            </div>
+            <div class="card-body">
+                <p>如果安装过原作者的版本，可以使用迁移脚本轻松迁移到新版本</p>
+                
+                <div class="os-badges">
+                    <span class="os-badge"><i class="fab fa-linux"></i> Linux</span>
+                    <span class="os-badge"><i class="fab fa-apple"></i> macOS</span>
+                </div>
+                <div class="command-block">
+                    <pre>bash <(curl -Ls unlock.icmp.ing/scripts/migrate.sh)</pre>
+                    <button class="copy-button"><i class="fas fa-copy"></i></button>
+                </div>
+                
+                <div class="os-badges">
+                    <span class="os-badge"><i class="fab fa-windows"></i> Windows</span>
+                </div>
+                <div class="command-block">
+                    <pre>irm https://unlock.icmp.ing/scripts/download_migrate.ps1 | iex</pre>
+                    <button class="copy-button"><i class="fas fa-copy"></i></button>
+                </div>
+                
+                <div class="feature-list">
+                    <li>自动卸载旧版本</li>
+                    <li>安装最新版本</li>
+                    <li>保留配置设置</li>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div>
+                <a href="https://github.com/HsukqiLee/MediaUnlockTest" target="_blank">GitHub</a> |
+                <a href="https://github.com/HsukqiLee/MediaUnlockTest/blob/main/README_en.md" target="_blank">English Docs</a>
+            </div>
+            <div class="author-section">
+                <span class="author">
+                    <img src="https://avatars.githubusercontent.com/u/79034142?v=4" alt="Hsukqi Lee">
+                    <a href="https://github.com/HsukqiLee/MediaUnlockTest" target="_blank">Hsukqi Lee</a>
+                </span>
+                <span class="author">
+                    <img src="https://avatars.githubusercontent.com/u/36293036?v=4" alt="nkeonkeo">
+                    <a href="https://github.com/nkeonkeo/MediaUnlockTest" target="_blank">nkeonkeo</a>
+                </span>
+            </div>
+            <p>© 2025 MediaUnlockTest. Made with ❤️</p>
+        </div>
+    </footer>
 </body>
 </html>
